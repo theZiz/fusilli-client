@@ -49,6 +49,7 @@ void print_help()
 	printf("         1377323529\n");
 	printf("         Ziz\n");
 	printf("         ZIZ\n");
+	printf("         667\n");
 	printf("         1410088968\n");
 	printf("       fc info ABOUT\n");
 	printf("       * prints informations about the profile of the player\n");
