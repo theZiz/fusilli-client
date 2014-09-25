@@ -15,6 +15,10 @@ ifdef TARGET
 include $(SPARROW_FOLDER)/target-files/$(TARGET).mk
 BUILD = ./build/$(TARGET)/fc
 SPARROW_LIB = $(SPARROW_FOLDER)/build/$(TARGET)/sparrow3d
+ifeq ($(TARGET),win32)
+	#the BUILDING_DLL is important for the linking...
+	STATIC = $(SPARROW_LIB)/libsparrowNet_static.a -DBUILDING_DLL
+endif
 else
 TARGET = "Default (change with make TARGET=otherTarget. See All targets with make targets)"
 BUILD = .
@@ -23,6 +27,8 @@ endif
 LIB += -L$(SPARROW_LIB)
 INCLUDE += -I$(SPARROW_FOLDER)
 
+
+
 all: fc
 	@echo "=== Built for Target "$(TARGET)" ==="
 
@@ -30,7 +36,7 @@ targets:
 	@echo "The targets are the same like for sparrow3d. :P"
 
 fc: fc.c makeBuildDir
-	$(CPP) $(CFLAGS) fc.c $(SDL) $(INCLUDE) $(LIB) $(STATIC) $(DYNAMIC) -o $(BUILD)/fc
+	$(CPP) $(CFLAGS) fc.c $(SDL) $(INCLUDE) $(LIB) $(STATIC) $(DYNAMIC) -o $(BUILD)/fc$(SUFFIX)
 
 makeBuildDir:
 	 @if [ ! -d $(BUILD:/fc=/) ]; then mkdir $(BUILD:/fc=/);fi
