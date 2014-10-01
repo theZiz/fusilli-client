@@ -53,7 +53,7 @@ void print_help()
 	printf("         1410088968\n");
 	printf("       fc info ABOUT\n");
 	printf("       * prints informations about the profile of the player\n");
-	printf("       * ABOUT may be longname, shortname, password, email, prid or all.\n");
+	printf("       * ABOUT may be longname, shortname, password, email, prid, cache or all.\n");
 	printf("         For \"all\" all informations are printed linewise in the named order.\n");
 }
 
@@ -184,6 +184,18 @@ int info(int mom_field,int argc,char **argv)
 		printf("%s\n",profile->password);
 		printf("%s\n",profile->email);
 		printf("%s\n",profile->prid);
+		if (spNetC4AIsSomethingCached())
+			printf("Something is cached.\n");
+		else
+			printf("Nothing is cached.\n");
+	}
+	else
+	if (strcmp(argv[mom_field],"cache") == 0)
+	{
+		if (spNetC4AIsSomethingCached())
+			printf("Something is cached.\n");
+		else
+			printf("Nothing is cached.\n");
 	}
 	else
 	if (strcmp(argv[mom_field],"longname") == 0)
