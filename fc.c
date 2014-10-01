@@ -1,7 +1,7 @@
 #include <string.h>
 #include <sparrowNet.h>
 
-#define VERSION "1.1.0.0"
+#define VERSION "1.1.1.0"
 
 #ifdef WIN32
 	#define SLEEP_MACRO Sleep(1);
@@ -37,6 +37,9 @@ void print_help()
 	printf("         With --cache the score is written to a file if the submit failed\n");
 	printf("         (e.g. because of a missing network connection). It will be tried\n");
 	printf("         to be resend the next time a score is submitted with fc.\n");
+	printf("       fc emptycache [TIMEOUT]\n");
+	printf("       * submits the cached scores (if available) using the optional\n");
+	printf("         timeout TIMEOUT (in ms). The default timeout is 10000 ms.\n");
 	printf("       fc [OPTIONS] pull GAMENAME [TIMEOUT]\n");
 	printf("       * gets all scores of the game GAMENAME using the optional\n");
 	printf("         timeout TIMEOUT (in ms). The default timeout is 10000 ms.\n");
@@ -134,6 +137,39 @@ int push(int mom_field,int argc,char **argv)
 	return 0;
 }
 
+int emptycache(int mom_field,int argc,char **argv)
+{
+	if (check_profile() == 0)
+	{
+		spQuitNet();
+		return -2;
+	}
+	int time_out = 10000;
+	if (argc > mom_field)
+		time_out = atoi(argv[mom_field]);
+	printf("Try to commit the cached scores. Timeout in %i ms...\n",time_out);
+	if (spNetC4ACommitScore(profile,"",0,NULL,time_out))
+	{
+		printf("Unknown error...\n");
+		spNetC4AFreeProfile(profile);
+		spQuitNet();
+		return -1;
+	}
+	while (spNetC4AGetStatus() == SP_C4A_PROGRESS)
+		SLEEP_MACRO
+	if (spNetC4AGetStatus() != SP_C4A_OK)
+	{
+		printf("Transmission error...\n");
+		spNetC4AFreeProfile(profile);
+		spQuitNet();
+		return -1;
+	}
+	printf("Success\n");
+	spNetC4AFreeProfile(profile);
+	spQuitNet();
+	return 0;
+}
+
 int pull(int mom_field,int argc,char **argv)
 {
 	if (test_me && check_profile() == 0)
@@ -187,18 +223,7 @@ int info(int mom_field,int argc,char **argv)
 		printf("%s\n",profile->password);
 		printf("%s\n",profile->email);
 		printf("%s\n",profile->prid);
-		if (spNetC4AIsSomethingCached())
-			printf("Something is cached.\n");
-		else
-			printf("Nothing is cached.\n");
-	}
-	else
-	if (strcmp(argv[mom_field],"cache") == 0)
-	{
-		if (spNetC4AIsSomethingCached())
-			printf("Something is cached.\n");
-		else
-			printf("Nothing is cached.\n");
+		printf("%i\n",spNetC4AHowManyCached());
 	}
 	else
 	if (strcmp(argv[mom_field],"longname") == 0)
@@ -216,6 +241,9 @@ int info(int mom_field,int argc,char **argv)
 	if (strcmp(argv[mom_field],"prid") == 0)
 		printf("%s\n",profile->prid);
 	else
+	if (strcmp(argv[mom_field],"cache") == 0)
+		printf("%i\n",spNetC4AHowManyCached());
+	else
 	{
 		spNetC4AFreeProfile(profile);
 		spQuitNet();
@@ -229,7 +257,7 @@ int info(int mom_field,int argc,char **argv)
 int main(int argc, char **argv)
 {
 	spInitNet();
-	if (argc < 3)
+	if (argc < 2)
 	{
 		print_help();
 		spQuitNet();
@@ -248,6 +276,9 @@ int main(int argc, char **argv)
 	if (test_me == 0 && strcmp(argv[mom_field],"--test-me") == 0)
 		{ test_me = 1; mom_field++; }
 	char* action = argv[mom_field++];
+	if (strcmp(action,"emptycache") == 0)
+		return emptycache(mom_field,argc,argv);
+	else
 	if (need_to_quit(mom_field,argc))
 		return -1;
 	if (strcmp(action,"push") == 0)
