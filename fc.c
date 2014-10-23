@@ -55,12 +55,10 @@ void print_help()
 	printf("         --102014 for the scores of october 2014. Use --thismonth for the\n");
 	printf("         score of the recent month. If you add --rankes the ranks are shown\n");
 	printf("         Every result then has 5 instead of 4 entries.\n");
-	printf("       * OPTIONS may only be --test-me atm. In that case a score is only\n");
-	printf("         shown if it is from the owner of the profile.\n");
 	printf("       * Except for using with --test-me no profile file is needed.\n");
-	printf("       * Every score persists of four lines: Player name, short player name,\n");
-	printf("         score and commit unix timestamp. So the output will be a multiple of\n");
-	printf("         four lines long, e.g.\n");
+	printf("       * Every score persists of 4 or 5 lines: (Rank,) Player name, short player\n");
+	printf("         name, score and commit unix timestamp. So the output will be a multiple\n");
+	printf("         of four or five lines long, e.g.\n");
 	printf("         Evil Dragon\n");
 	printf("         EVD\n");
 	printf("         1337\n");
