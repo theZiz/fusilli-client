@@ -1,7 +1,7 @@
 #include <string.h>
 #include <sparrowNet.h>
 
-#define VERSION "1.1.1.1"
+#define VERSION "1.1.1.2"
 
 #ifdef WIN32
 	#define SLEEP_MACRO Sleep(1);
@@ -32,8 +32,8 @@ void print_help()
 	printf("       fc [OPTIONS] push GAMENAME SCORE [TIMEOUT]\n");
 	printf("       * submits the score SCORE for the game GAMENAME using the optional\n");
 	printf("         timeout TIMEOUT (in ms). The default timeout is 10000 ms.\n");
-	printf("       * OPTIONS may be --test-me or --cache. In the first case a score is only\n");
-	printf("         submitted if the score isn't uploaded at c4a yet for the player.\n");
+	printf("       * OPTIONS may be eiether --test-me or --cache. In the first case a score\n");
+	printf("         is only submitted if the score isn't uploaded at c4a yet for the player\n");
 	printf("         With --cache the score is written to a file if the submit failed\n");
 	printf("         (e.g. because of a missing network connection). It will be tried\n");
 	printf("         to be resend the next time a score is submitted with fc.\n");
@@ -269,12 +269,26 @@ int main(int argc, char **argv)
 	//--test-me --cache
 	//--cache
 	//--cache --test-me
+	int caching = 0;
 	if (strcmp(argv[mom_field],"--test-me") == 0)
 		{ test_me = 1; mom_field++; }
+	if (need_to_quit(mom_field,argc))
+		return -1;
 	if (strcmp(argv[mom_field],"--cache") == 0)
-		{ spNetC4ASetCaching(1); mom_field++; }
+		{ caching = 1; mom_field++; }
+	if (need_to_quit(mom_field,argc))
+		return -1;
 	if (test_me == 0 && strcmp(argv[mom_field],"--test-me") == 0)
 		{ test_me = 1; mom_field++; }
+	if (test_me && caching)
+	{
+		printf("Error: --test-me and --cache doesn't work together\n");
+		spQuitNet();
+		return -1;
+	}
+	if (need_to_quit(mom_field,argc))
+		return -1;
+	spNetC4ASetCaching(caching);
 	char* action = argv[mom_field++];
 	if (strcmp(action,"emptycache") == 0)
 		return emptycache(mom_field,argc,argv);
