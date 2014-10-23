@@ -1,7 +1,7 @@
 #include <string.h>
 #include <sparrowNet.h>
 
-#define VERSION "1.1.1.2"
+#define VERSION "1.2.0.0"
 
 #ifdef WIN32
 	#define SLEEP_MACRO Sleep(1);
@@ -11,6 +11,11 @@
 
 spNetC4AProfilePointer profile = NULL;
 int test_me = 0;
+int caching = 0;
+int filtered = 0;
+int month = 0;
+int year = 0;
+int ranks = 0;
 
 int check_profile()
 {
@@ -32,7 +37,7 @@ void print_help()
 	printf("       fc [OPTIONS] push GAMENAME SCORE [TIMEOUT]\n");
 	printf("       * submits the score SCORE for the game GAMENAME using the optional\n");
 	printf("         timeout TIMEOUT (in ms). The default timeout is 10000 ms.\n");
-	printf("       * OPTIONS may be eiether --test-me or --cache. In the first case a score\n");
+	printf("       * OPTIONS may be either --test-me or --cache. In the first case a score\n");
 	printf("         is only submitted if the score isn't uploaded at c4a yet for the player\n");
 	printf("         With --cache the score is written to a file if the submit failed\n");
 	printf("         (e.g. because of a missing network connection). It will be tried\n");
@@ -43,6 +48,13 @@ void print_help()
 	printf("       fc [OPTIONS] pull GAMENAME [TIMEOUT]\n");
 	printf("       * gets all scores of the game GAMENAME using the optional\n");
 	printf("         timeout TIMEOUT (in ms). The default timeout is 10000 ms.\n");
+	printf("       * OPTIONS may be --test-me, --filtered, --MMYYYY, --thismonth or --ranks.\n");
+	printf("         With --test-me a score is only shown if it is from the owner of the\n");
+	printf("         profile. With --filtered for every player only the best scores is\n");
+	printf("         shown. With --MMYYYY you can add a month of a year to show like\n");
+	printf("         --102014 for the scores of october 2014. Use --thismonth for the\n");
+	printf("         score of the recent month. If you add --rankes the ranks are shown\n");
+	printf("         Every result then has 5 instead of 4 entries.\n");
 	printf("       * OPTIONS may only be --test-me atm. In that case a score is only\n");
 	printf("         shown if it is from the owner of the profile.\n");
 	printf("       * Except for using with --test-me no profile file is needed.\n");
@@ -170,6 +182,24 @@ int emptycache(int mom_field,int argc,char **argv)
 	return 0;
 }
 
+typedef struct sNameCache *pNameCache;
+typedef struct sNameCache {
+	char longname[256];
+	char shortname[256];
+	pNameCache next;
+} tNameCache;
+
+int not_shown_yet(pNameCache cache,char* longname,char* shortname)
+{
+	while (cache)
+	{
+		if (strcmp(cache->longname,longname) == 0 && strcmp(cache->shortname,shortname) == 0)
+			return 0;
+		cache = cache->next;
+	}
+	return 1;
+}
+
 int pull(int mom_field,int argc,char **argv)
 {
 	if (test_me && check_profile() == 0)
@@ -182,7 +212,12 @@ int pull(int mom_field,int argc,char **argv)
 	if (argc > mom_field)
 		time_out = atoi(argv[mom_field]);
 	spNetC4AScorePointer scoreList = NULL;
-	if (spNetC4AGetScore(&scoreList,test_me?profile:NULL,game_name,time_out))
+	int result;
+	if (month)
+		result = spNetC4AGetScoreOfMonth(&scoreList,test_me?profile:NULL,game_name,year,month,time_out);
+	else
+		result = spNetC4AGetScore(&scoreList,test_me?profile:NULL,game_name,time_out);
+	if (result)
 	{
 		spNetC4AFreeProfile(profile);
 		spQuitNet();
@@ -197,10 +232,33 @@ int pull(int mom_field,int argc,char **argv)
 		return -1;
 	}
 	spNetC4AScorePointer mom = scoreList;
+	pNameCache cache = NULL;
+	int rank = 1;
 	while (mom)
 	{
-		printf("%s\n%s\n%i\n%i\n",mom->longname,mom->shortname,mom->score,(Uint32)(mom->commitTime));
+		if (!filtered || not_shown_yet(cache,mom->longname,mom->shortname))
+		{
+			if (ranks)
+				printf("%i\n%s\n%s\n%i\n%i\n",rank,mom->longname,mom->shortname,mom->score,(Uint32)(mom->commitTime));
+			else
+				printf("%s\n%s\n%i\n%i\n",mom->longname,mom->shortname,mom->score,(Uint32)(mom->commitTime));
+			if (filtered)
+			{
+				pNameCache name = (pNameCache)malloc(sizeof(tNameCache));
+				sprintf(name->longname,"%s",mom->longname);
+				sprintf(name->shortname,"%s",mom->shortname);
+				name->next = cache;
+				cache = name;
+			}
+		}
+		rank++;
 		mom = mom->next;
+	}
+	while (cache)
+	{
+		pNameCache next = cache->next;
+		free(cache);
+		cache = next;
 	}
 	spNetC4ADeleteScores(&scoreList);	
 	if (profile)
@@ -264,22 +322,51 @@ int main(int argc, char **argv)
 		return -1;
 	}
 	int mom_field = 1;
-	//easiest method to check for any combination of
-	//--test-me
-	//--test-me --cache
-	//--cache
-	//--cache --test-me
-	int caching = 0;
-	if (strcmp(argv[mom_field],"--test-me") == 0)
-		{ test_me = 1; mom_field++; }
 	if (need_to_quit(mom_field,argc))
 		return -1;
-	if (strcmp(argv[mom_field],"--cache") == 0)
-		{ caching = 1; mom_field++; }
-	if (need_to_quit(mom_field,argc))
-		return -1;
-	if (test_me == 0 && strcmp(argv[mom_field],"--test-me") == 0)
-		{ test_me = 1; mom_field++; }
+	while (argv[mom_field][0] == '-' && argv[mom_field][1] == '-') //Starts with --
+	{
+		if (strcmp(argv[mom_field],"--test-me") == 0)
+			test_me = 1;
+		else
+		if (strcmp(argv[mom_field],"--cache") == 0)
+			caching = 1;
+		else
+		if (strcmp(argv[mom_field],"--filtered") == 0)
+			filtered = 1;
+		else
+		if (strcmp(argv[mom_field],"--ranks") == 0)
+			ranks = 1;
+		else
+		if (strcmp(argv[mom_field],"--thismonth") == 0)
+		{
+			time_t rawtime;
+			struct tm * ptm;
+			time ( &rawtime );
+			ptm = gmtime ( &rawtime );	
+			year = ptm->tm_year+1900;
+			month = ptm->tm_mon+1;
+		}
+		else
+		{
+			//Assuming MMYYYY
+			char month_c[3];
+			memcpy(month_c,&(argv[mom_field][2]),2);
+			month_c[2] = 0;
+			month = atoi(month_c);
+			char year_c[5];
+			memcpy(year_c,&(argv[mom_field][4]),4);
+			year_c[4] = 0;
+			year = atoi(year_c);
+			if (month < 1)
+				month = 1;
+			if (month > 12)
+				month = 12;
+		}
+		mom_field++;
+		if (need_to_quit(mom_field,argc))
+			return -1;
+	}
 	if (test_me && caching)
 	{
 		printf("Error: --test-me and --cache doesn't work together\n");
