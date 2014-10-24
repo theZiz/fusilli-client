@@ -1,7 +1,7 @@
 #include <string.h>
 #include <sparrowNet.h>
 
-#define VERSION "1.2.0.0"
+#define VERSION "1.2.0.1"
 
 #ifdef WIN32
 	#define SLEEP_MACRO Sleep(1);
@@ -32,20 +32,20 @@ void print_help()
 {
 	printf("Fusilli client Version "VERSION"\n");
 	printf("Built for "SP_DEVICE_STRING"\n");
-	printf("Usage: fc [OPTIONS] ACTION [ACTION OPTIONS]\n");
+	printf("Usage: fusilli [OPTIONS] ACTION [ACTION OPTIONS]\n");
 	printf("These actions may be:\n");
-	printf("       fc [OPTIONS] push GAMENAME SCORE [TIMEOUT]\n");
+	printf("       fusilli [OPTIONS] push GAMENAME SCORE [TIMEOUT]\n");
 	printf("       * submits the score SCORE for the game GAMENAME using the optional\n");
 	printf("         timeout TIMEOUT (in ms). The default timeout is 10000 ms.\n");
 	printf("       * OPTIONS may be either --test-me or --cache. In the first case a score\n");
 	printf("         is only submitted if the score isn't uploaded at c4a yet for the player\n");
 	printf("         With --cache the score is written to a file if the submit failed\n");
 	printf("         (e.g. because of a missing network connection). It will be tried\n");
-	printf("         to be resend the next time a score is submitted with fc.\n");
-	printf("       fc emptycache [TIMEOUT]\n");
+	printf("         to be resend the next time a score is submitted with fusilli.\n");
+	printf("       fusilli emptycache [TIMEOUT]\n");
 	printf("       * submits the cached scores (if available) using the optional\n");
 	printf("         timeout TIMEOUT (in ms). The default timeout is 10000 ms.\n");
-	printf("       fc [OPTIONS] pull GAMENAME [TIMEOUT]\n");
+	printf("       fusilli [OPTIONS] pull GAMENAME [TIMEOUT]\n");
 	printf("       * gets all scores of the game GAMENAME using the optional\n");
 	printf("         timeout TIMEOUT (in ms). The default timeout is 10000 ms.\n");
 	printf("       * OPTIONS may be --test-me, --filtered, --MMYYYY, --thismonth or --ranks.\n");
@@ -67,7 +67,7 @@ void print_help()
 	printf("         ZIZ\n");
 	printf("         667\n");
 	printf("         1410088968\n");
-	printf("       fc info ABOUT\n");
+	printf("       fusilli info ABOUT\n");
 	printf("       * prints informations about the profile of the player\n");
 	printf("       * ABOUT may be longname, shortname, password, email, prid, cache or all.\n");
 	printf("         For \"all\" all informations are printed linewise in the named order.\n");

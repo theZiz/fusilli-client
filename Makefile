@@ -13,7 +13,7 @@ SDL = `sdl-config --cflags`
 
 ifdef TARGET
 include $(SPARROW_FOLDER)/target-files/$(TARGET).mk
-BUILD = ./build/$(TARGET)/fc
+BUILD = ./build/$(TARGET)/fusilli
 SPARROW_LIB = $(SPARROW_FOLDER)/build/$(TARGET)/sparrow3d
 ifeq ($(TARGET),win32)
 	#the BUILDING_DLL is important for the linking...
@@ -29,19 +29,19 @@ INCLUDE += -I$(SPARROW_FOLDER)
 
 
 
-all: fc
+all: fusilli
 	@echo "=== Built for Target "$(TARGET)" ==="
 
 targets:
 	@echo "The targets are the same like for sparrow3d. :P"
 
-fc: fc.c makeBuildDir
-	$(CPP) $(CFLAGS) fc.c $(SDL) $(INCLUDE) $(LIB) $(STATIC) $(DYNAMIC) -o $(BUILD)/fc$(SUFFIX)
+fusilli: fusilli.c makeBuildDir
+	$(CPP) $(CFLAGS) fusilli.c $(SDL) $(INCLUDE) $(LIB) $(STATIC) $(DYNAMIC) -o $(BUILD)/fusilli$(SUFFIX)
 
 makeBuildDir:
-	 @if [ ! -d $(BUILD:/fc=/) ]; then mkdir $(BUILD:/fc=/);fi
+	 @if [ ! -d $(BUILD:/fusilli=/) ]; then mkdir $(BUILD:/fusilli=/);fi
 	 @if [ ! -d $(BUILD) ]; then mkdir $(BUILD);fi
 
 clean:
 	rm -f *.o
-	rm -f fc
+	rm -f fusilli
