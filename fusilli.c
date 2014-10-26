@@ -1,7 +1,7 @@
 #include <string.h>
 #include <sparrowNet.h>
 
-#define VERSION "1.2.0.1"
+#define VERSION "1.2.0.2"
 
 #ifdef WIN32
 	#define SLEEP_MACRO Sleep(1);
@@ -71,6 +71,12 @@ void print_help()
 	printf("       * prints informations about the profile of the player\n");
 	printf("       * ABOUT may be longname, shortname, password, email, prid, cache or all.\n");
 	printf("         For \"all\" all informations are printed linewise in the named order.\n");
+	printf("Return values:\n");
+	printf("       *  0 if everything went fine\n");
+	printf("       * -1 (255) at submission error. This is even -1 if the submission failed,\n");
+	printf("         but was cached and if no submission was done on purpose because of\n");
+	printf("         --test-me.\n");
+	printf("       * -2 (254) if no profile file is found, but needed\n");
 }
 
 int need_to_quit(int mom_field,int argc)
