@@ -8,7 +8,7 @@ CFLAGS = -O3 -fsingle-precision-constant -fPIC
 # Testtweaks: -fgcse-lm -fgcse-sm -fcched-spec-load -fmodulo-sched -funsafe-loop-optimizations -Wunsafe-loop-optimizations -fgcse-las -fgcse-after-reload -fvariable-expansion-in-unroller -ftracer -fbranch-target-load-optimize
 GENERAL_TWEAKS = -ffast-math
 #==PC==
-CPP = gcc -g -march=native -DX86CPU $(GENERAL_TWEAKS)
+CPP = gcc -g -DX86CPU $(GENERAL_TWEAKS)
 SDL = `sdl-config --cflags`
 
 ifdef TARGET
@@ -45,3 +45,6 @@ makeBuildDir:
 clean:
 	rm -f *.o
 	rm -f fusilli
+
+oclean:
+	rm -f *.o
