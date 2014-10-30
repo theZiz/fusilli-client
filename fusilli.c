@@ -1,7 +1,7 @@
 #include <string.h>
 #include <sparrowNet.h>
 
-#define VERSION "1.2.0.2"
+#define VERSION "1.3.0.0"
 
 #ifdef WIN32
 	#define SLEEP_MACRO Sleep(1);
@@ -37,11 +37,15 @@ void print_help()
 	printf("       fusilli [OPTIONS] push GAMENAME SCORE [TIMEOUT]\n");
 	printf("       * submits the score SCORE for the game GAMENAME using the optional\n");
 	printf("         timeout TIMEOUT (in ms). The default timeout is 10000 ms.\n");
-	printf("       * OPTIONS may be either --test-me or --cache. In the first case a score\n");
-	printf("         is only submitted if the score isn't uploaded at c4a yet for the player\n");
-	printf("         With --cache the score is written to a file if the submit failed\n");
-	printf("         (e.g. because of a missing network connection). It will be tried\n");
-	printf("         to be resend the next time a score is submitted with fusilli.\n");
+	printf("         If the timeout is 0, no score will be send, but cached if enabled.\n");
+	printf("       * OPTIONS may be either --test-me, --cache, --backwardscache or\n");
+	printf("         --multicach. In the first case a score is only submitted if the\n");
+	printf("         score isn't uploaded at c4a yet for the player. With --multicache\n");
+	printf("         the score is written to a file if the submit failed (e.g. because\n");
+	printf("         of a missing network connection). It will be tried to resend it the\n");
+	printf("         next time a score is submitted with fusilli. --cache and\n");
+	printf("         --backwardscache do the same, but for every game only the best score\n");
+	printf("         is cached. With --cache higher is better, with --backwardscache lower.\n");
 	printf("       fusilli emptycache [TIMEOUT]\n");
 	printf("       * submits the cached scores (if available) using the optional\n");
 	printf("         timeout TIMEOUT (in ms). The default timeout is 10000 ms.\n");
@@ -333,8 +337,14 @@ int main(int argc, char **argv)
 		if (strcmp(argv[mom_field],"--test-me") == 0)
 			test_me = 1;
 		else
-		if (strcmp(argv[mom_field],"--cache") == 0)
+		if (strcmp(argv[mom_field],"--multicache") == 0)
 			caching = 1;
+		else
+		if (strcmp(argv[mom_field],"--cache") == 0)
+			caching = 2;
+		else
+		if (strcmp(argv[mom_field],"--backwardscache") == 0)
+			caching = 3;
 		else
 		if (strcmp(argv[mom_field],"--filtered") == 0)
 			filtered = 1;
