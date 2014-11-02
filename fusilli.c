@@ -190,24 +190,6 @@ int emptycache(int mom_field,int argc,char **argv)
 	return 0;
 }
 
-typedef struct sNameCache *pNameCache;
-typedef struct sNameCache {
-	char longname[256];
-	char shortname[256];
-	pNameCache next;
-} tNameCache;
-
-int not_shown_yet(pNameCache cache,char* longname,char* shortname)
-{
-	while (cache)
-	{
-		if (strcmp(cache->longname,longname) == 0 && strcmp(cache->shortname,shortname) == 0)
-			return 0;
-		cache = cache->next;
-	}
-	return 1;
-}
-
 int pull(int mom_field,int argc,char **argv)
 {
 	if (test_me && check_profile() == 0)
@@ -239,34 +221,16 @@ int pull(int mom_field,int argc,char **argv)
 		spQuitNet();
 		return -1;
 	}
+	if (filtered)
+		spNetC4AFilterScore(&scoreList);
 	spNetC4AScorePointer mom = scoreList;
-	pNameCache cache = NULL;
-	int rank = 1;
 	while (mom)
 	{
-		if (!filtered || not_shown_yet(cache,mom->longname,mom->shortname))
-		{
-			if (ranks)
-				printf("%i\n%s\n%s\n%i\n%i\n",rank,mom->longname,mom->shortname,mom->score,(Uint32)(mom->commitTime));
-			else
-				printf("%s\n%s\n%i\n%i\n",mom->longname,mom->shortname,mom->score,(Uint32)(mom->commitTime));
-			if (filtered)
-			{
-				pNameCache name = (pNameCache)malloc(sizeof(tNameCache));
-				sprintf(name->longname,"%s",mom->longname);
-				sprintf(name->shortname,"%s",mom->shortname);
-				name->next = cache;
-				cache = name;
-			}
-		}
-		rank++;
+		if (ranks)
+			printf("%i\n%s\n%s\n%i\n%i\n",mom->rank,mom->longname,mom->shortname,mom->score,(Uint32)(mom->commitTime));
+		else
+			printf("%s\n%s\n%i\n%i\n",mom->longname,mom->shortname,mom->score,(Uint32)(mom->commitTime));
 		mom = mom->next;
-	}
-	while (cache)
-	{
-		pNameCache next = cache->next;
-		free(cache);
-		cache = next;
 	}
 	spNetC4ADeleteScores(&scoreList);	
 	if (profile)
