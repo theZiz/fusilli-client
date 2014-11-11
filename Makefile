@@ -8,7 +8,7 @@ CFLAGS = -O3 -fsingle-precision-constant -fPIC
 # Testtweaks: -fgcse-lm -fgcse-sm -fcched-spec-load -fmodulo-sched -funsafe-loop-optimizations -Wunsafe-loop-optimizations -fgcse-las -fgcse-after-reload -fvariable-expansion-in-unroller -ftracer -fbranch-target-load-optimize
 GENERAL_TWEAKS = -ffast-math
 #==PC==
-CPP = gcc -g -DX86CPU $(GENERAL_TWEAKS)
+FLAGS = -g -DDESKTOP $(GENERAL_TWEAKS)
 SDL = `sdl-config --cflags`
 
 ifdef TARGET
@@ -27,7 +27,7 @@ endif
 LIB += -L$(SPARROW_LIB)
 INCLUDE += -I$(SPARROW_FOLDER)
 
-
+CFLAGS += $(PARAMETER) $(FLAGS)
 
 all: fusilli
 	@echo "=== Built for Target "$(TARGET)" ==="
@@ -36,7 +36,7 @@ targets:
 	@echo "The targets are the same like for sparrow3d. :P"
 
 fusilli: fusilli.c makeBuildDir
-	$(CPP) $(CFLAGS) fusilli.c $(SDL) $(INCLUDE) $(LIB) $(STATIC) $(DYNAMIC) -o $(BUILD)/fusilli$(SUFFIX)
+	$(CC) $(CFLAGS) fusilli.c $(SDL) $(INCLUDE) $(LIB) $(STATIC) $(DYNAMIC) -o $(BUILD)/fusilli$(SUFFIX)
 
 makeBuildDir:
 	 @if [ ! -d $(BUILD:/fusilli=/) ]; then mkdir $(BUILD:/fusilli=/);fi
