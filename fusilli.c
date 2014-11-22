@@ -1,7 +1,7 @@
 #include <string.h>
 #include <sparrowNet.h>
 
-#define VERSION "1.3.0.0"
+#define VERSION "1.3.0.1"
 
 #ifdef WIN32
 	#define SLEEP_MACRO Sleep(1);
